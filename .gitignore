@@ -3,13 +3,13 @@ cover/
 /dist/
 .DS_Store
 *.egg
-/env/
+/.env/
 /htmlcov/
 .idea/
 .project
 *.pyc
 .pydevproject
-/PyHive.egg-info/
+/py_hive_iomete.egg-info/
 .settings
 .cache/
 *.iml

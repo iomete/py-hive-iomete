@@ -42,13 +42,6 @@ _logger = logging.getLogger(__name__)
 
 _TIMESTAMP_PATTERN = re.compile(r'(\d+-\d+-\d+ \d+:\d+:\d+(\.\d{,6})?)')
 
-ssl_cert_parameter_map = {
-    "none": CERT_NONE,
-    "optional": CERT_OPTIONAL,
-    "required": CERT_REQUIRED,
-}
-
-
 def _parse_timestamp(value):
     if value:
         match = _TIMESTAMP_PATTERN.match(value)
@@ -110,128 +103,48 @@ class Connection(object):
     def __init__(
         self,
         host=None,
-        port=None,
-        scheme=None,
-        username=None,
+        port=443,
+        scheme="https",
+
+        account_number=None,
+        lakehouse=None,
+
         database='default',
-        auth=None,
-        configuration=None,
-        kerberos_service_name=None,
+        username=None,
         password=None,
-        check_hostname=None,
-        ssl_cert=None,
+
+        configuration=None,
         thrift_transport=None
     ):
         """Connect to HiveServer2
 
         :param host: What host HiveServer2 runs on
         :param port: What port HiveServer2 runs on. Defaults to 10000.
-        :param auth: The value of hive.server2.authentication used by HiveServer2.
-            Defaults to ``NONE``.
         :param configuration: A dictionary of Hive settings (functionally same as the `set` command)
-        :param kerberos_service_name: Use with auth='KERBEROS' only
-        :param password: Use with auth='LDAP' or auth='CUSTOM' only
-        :param thrift_transport: A ``TTransportBase`` for custom advanced usage.
-            Incompatible with host, port, auth, kerberos_service_name, and password.
-
-        The way to support LDAP and GSSAPI is originated from cloudera/Impyla:
-        https://github.com/cloudera/impyla/blob/255b07ed973d47a3395214ed92d35ec0615ebf62
-        /impala/_thrift_api.py#L152-L160
         """
         if scheme in ("https", "http") and thrift_transport is None:
             port = port or 1000
             ssl_context = None
             if scheme == "https":
                 ssl_context = create_default_context()
-                ssl_context.check_hostname = check_hostname == "true"
-                ssl_cert = ssl_cert or "none"
-                ssl_context.verify_mode = ssl_cert_parameter_map.get(ssl_cert, CERT_NONE)
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = CERT_NONE
             thrift_transport = thrift.transport.THttpClient.THttpClient(
-                uri_or_host="{scheme}://{host}:{port}/cliservice/".format(
-                    scheme=scheme, host=host, port=port
+                uri_or_host="{scheme}://{host}:{port}/lakehouse/{account_number}/{lakehouse}".format(
+                    scheme=scheme, host=host, port=port, account_number=account_number, lakehouse=lakehouse
                 ),
                 ssl_context=ssl_context,
             )
 
-            if auth in ("BASIC", "NOSASL", "NONE", None):
-                # Always needs the Authorization header
-                self._set_authorization_header(thrift_transport, username, password)
-            elif auth == "KERBEROS" and kerberos_service_name:
-                self._set_kerberos_header(thrift_transport, kerberos_service_name, host)
-            else:
-                raise ValueError(
-                    "Authentication is not valid use one of:"
-                    "BASIC, NOSASL, KERBEROS, NONE"
-                )
-            host, port, auth, kerberos_service_name, password = (
-                None, None, None, None, None
-            )
+            self._set_authorization_header(thrift_transport, username, password)
 
         username = username or getpass.getuser()
         configuration = configuration or {}
 
-        if (password is not None) != (auth in ('LDAP', 'CUSTOM')):
-            raise ValueError("Password should be set if and only if in LDAP or CUSTOM mode; "
-                             "Remove password or use one of those modes")
-        if (kerberos_service_name is not None) != (auth == 'KERBEROS'):
-            raise ValueError("kerberos_service_name should be set if and only if in KERBEROS mode")
-        if thrift_transport is not None:
-            has_incompatible_arg = (
-                host is not None
-                or port is not None
-                or auth is not None
-                or kerberos_service_name is not None
-                or password is not None
-            )
-            if has_incompatible_arg:
-                raise ValueError("thrift_transport cannot be used with "
-                                 "host/port/auth/kerberos_service_name/password")
+        if thrift_transport is None:
+            raise ValueError("thrift_transport cannot be none!")
 
-        if thrift_transport is not None:
-            self._transport = thrift_transport
-        else:
-            if port is None:
-                port = 10000
-            if auth is None:
-                auth = 'NONE'
-            socket = thrift.transport.TSocket.TSocket(host, port)
-            if auth == 'NOSASL':
-                # NOSASL corresponds to hive.server2.authentication=NOSASL in hive-site.xml
-                self._transport = thrift.transport.TTransport.TBufferedTransport(socket)
-            elif auth in ('LDAP', 'KERBEROS', 'NONE', 'CUSTOM'):
-                # Defer import so package dependency is optional
-                import sasl
-                import thrift_sasl
-
-                if auth == 'KERBEROS':
-                    # KERBEROS mode in hive.server2.authentication is GSSAPI in sasl library
-                    sasl_auth = 'GSSAPI'
-                else:
-                    sasl_auth = 'PLAIN'
-                    if password is None:
-                        # Password doesn't matter in NONE mode, just needs to be nonempty.
-                        password = 'x'
-
-                def sasl_factory():
-                    sasl_client = sasl.Client()
-                    sasl_client.setAttr('host', host)
-                    if sasl_auth == 'GSSAPI':
-                        sasl_client.setAttr('service', kerberos_service_name)
-                    elif sasl_auth == 'PLAIN':
-                        sasl_client.setAttr('username', username)
-                        sasl_client.setAttr('password', password)
-                    else:
-                        raise AssertionError
-                    sasl_client.init()
-                    return sasl_client
-                self._transport = thrift_sasl.TSaslClientTransport(sasl_factory, sasl_auth, socket)
-            else:
-                # All HS2 config options:
-                # https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-Configuration
-                # PAM currently left to end user via thrift_transport option.
-                raise NotImplementedError(
-                    "Only NONE, NOSASL, LDAP, KERBEROS, CUSTOM "
-                    "authentication are supported, got {}".format(auth))
+        self._transport = thrift_transport
 
         protocol = thrift.protocol.TBinaryProtocol.TBinaryProtocol(self._transport)
         self._client = TCLIService.Client(protocol)
@@ -272,27 +185,6 @@ class Connection(object):
             {
                 "Authorization": "Basic {auth_credentials_base64}".format(
                     auth_credentials_base64=auth_credentials_base64
-                )
-            }
-        )
-
-    @staticmethod
-    def _set_kerberos_header(transport, kerberos_service_name, host):
-        import kerberos
-
-        __, krb_context = kerberos.authGSSClientInit(
-            service="{kerberos_service_name}@{host}".format(
-                kerberos_service_name=kerberos_service_name, host=host
-            )
-        )
-        kerberos.authGSSClientClean(krb_context, "")
-        kerberos.authGSSClientStep(krb_context, "")
-        auth_header = kerberos.authGSSClientResponse(krb_context)
-
-        transport.setCustomHeaders(
-            {
-                "Authorization": "Negotiate {auth_header}".format(
-                    auth_header=auth_header
                 )
             }
         )

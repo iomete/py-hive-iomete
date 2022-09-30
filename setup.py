@@ -23,13 +23,13 @@ with open('README.rst') as readme:
     long_description = readme.read()
 
 setup(
-    name="PyHive",
+    name="py-hive-iomete",
     version=pyhive.__version__,
-    description="Python interface to Hive",
+    description="Python interface to iomete (Hive)",
     long_description=long_description,
-    url='https://github.com/dropbox/PyHive',
-    author="Jing Wang",
-    author_email="jing@dropbox.com",
+    url='https://github.com/iomete/py-hive-iomete',
+    author="Vusal Dadalov",
+    author_email="vusal@iomete.com",
     license="Apache License, Version 2.0",
     packages=['pyhive', 'TCLIService'],
     classifiers=[
@@ -41,21 +41,16 @@ setup(
     install_requires=[
         'future',
         'python-dateutil',
+        'thrift==0.13.0'
     ],
     extras_require={
-        'presto': ['requests>=1.0.0'],
-        'trino': ['requests>=1.0.0'],
-        'hive': ['sasl>=0.2.1', 'thrift>=0.10.0', 'thrift_sasl>=0.1.0'],
-        'sqlalchemy': ['sqlalchemy>=1.3.0'],
-        'kerberos': ['requests_kerberos>=0.12.0'],
+        'sqlalchemy': ['sqlalchemy>=1.3.0']
     },
     tests_require=[
         'mock>=1.0.0',
         'pytest',
         'pytest-cov',
         'requests>=1.0.0',
-        'requests_kerberos>=0.12.0',
-        'sasl>=0.2.1',
         'sqlalchemy>=1.3.0',
         'thrift>=0.10.0',
     ],
@@ -65,11 +60,9 @@ setup(
     },
     entry_points={
         'sqlalchemy.dialects': [
-            'hive = pyhive.sqlalchemy_hive:HiveDialect',
-            "hive.http = pyhive.sqlalchemy_hive:HiveHTTPDialect",
-            "hive.https = pyhive.sqlalchemy_hive:HiveHTTPSDialect",
-            'presto = pyhive.sqlalchemy_presto:PrestoDialect',
-            'trino.pyhive = pyhive.sqlalchemy_trino:TrinoDialect',
+            "hive = pyhive.sqlalchemy_hive:HiveIometeDialect",
+            "hive.iomete = pyhive.sqlalchemy_hive:HiveIometeDialect",
+            "iomete = pyhive.sqlalchemy_iomete:IometeDialect"
         ],
     }
 )

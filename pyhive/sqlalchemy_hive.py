@@ -247,6 +247,7 @@ class HiveDialect(default.DefaultDialect):
     supports_multivalues_insert = True
     type_compiler = HiveTypeCompiler
     supports_sane_rowcount = False
+    supports_statement_cache = False
 
     @classmethod
     def dbapi(cls):
@@ -311,7 +312,7 @@ class HiveDialect(default.DefaultDialect):
         rows = [row for row in rows if row[0] and row[0] != '# col_name']
         result = []
         for (col_name, col_type, _comment) in rows:
-            if col_name == '# Partition Information':
+            if col_name == '# Partition Information' or col_type is None:
                 break
             # Take out the more detailed type information
             # e.g. 'map<int,int>' -> 'map'
@@ -377,7 +378,6 @@ class HiveDialect(default.DefaultDialect):
 
 
 class HiveHTTPDialect(HiveDialect):
-
     name = "hive"
     scheme = "http"
     driver = "rest"
@@ -395,8 +395,27 @@ class HiveHTTPDialect(HiveDialect):
             return [], kwargs
         return ([], kwargs)
 
+class HiveIometeDialect(HiveDialect):
+    name = 'iomete'
+    scheme = "iomete"
+    driver = "rest"
 
-class HiveHTTPSDialect(HiveHTTPDialect):
+    supports_statement_cache = False
 
-    name = "hive"
-    scheme = "https"
+    def create_connect_args(self, url):
+        kwargs = {
+            "host": url.host,
+            "port": url.port or 443,
+            "scheme": "https",
+            "username": url.username or None,
+            "password": url.password or None,
+            "database": url.database or None
+        }
+        if url.query:
+            kwargs.update(url.query)
+            return [], kwargs
+        return ([], kwargs)
+
+    @classmethod
+    def dbapi(cls):
+        return hive
