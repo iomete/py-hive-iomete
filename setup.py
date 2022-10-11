@@ -22,6 +22,15 @@ class PyTest(TestCommand):
 with open('README.rst') as readme:
     long_description = readme.read()
 
+test_deps = [
+    'mock>=1.0.0',
+    'pytest',
+    'pytest-cov',
+    'requests>=1.0.0',
+    'sqlalchemy>=1.3.0',
+    'thrift==0.13.0',
+]
+
 setup(
     name="py-hive-iomete",
     version=pyhive.__version__,
@@ -44,16 +53,10 @@ setup(
         'thrift==0.13.0'
     ],
     extras_require={
-        'sqlalchemy': ['sqlalchemy>=1.3.0']
+        'sqlalchemy': ['sqlalchemy>=1.3.0'],
+        'test': test_deps,
     },
-    tests_require=[
-        'mock>=1.0.0',
-        'pytest',
-        'pytest-cov',
-        'requests>=1.0.0',
-        'sqlalchemy>=1.3.0',
-        'thrift>=0.10.0',
-    ],
+    tests_require=test_deps,
     cmdclass={'test': PyTest},
     package_data={
         '': ['*.rst'],
