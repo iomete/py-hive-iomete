@@ -17,7 +17,7 @@ DB-API
 
     connection = hive.connect(
         host="<cloud_region>.iomete.com",
-        account_number="<account_number>",
+        workspace_id="<workspace_id>",
         lakehouse="<lakehouse_cluster_name>",
         database="default",
         username="<username>",
@@ -39,7 +39,7 @@ DB-API (asynchronous)
 
     connection = hive.connect(
         host="<cloud_region>.iomete.com",
-        account_number="<account_number>",
+        workspace_id="<workspace_id>",
         lakehouse="<lakehouse_cluster_name>",
         database="default",
         username="<username>",
@@ -76,11 +76,11 @@ First install this package to register it with SQLAlchemy (see ``setup.py``).
     from sqlalchemy.schema import *
 
     engine = create_engine(
-        'iomete://<username>:<password>@<region>.iomete.com/<database>?account_number=<account_number>&lakehouse=<lakehouse_cluster_name>')
+        'iomete://<username>:<password>@<region>.iomete.com/<database>?workspace_id=<workspace_id>&lakehouse=<lakehouse_cluster_name>')
 
     # Alternatively, "hive" driver could be used as well
     # engine = create_engine(
-    #    'hive://<username>:<password>@<region>.iomete.com/<database>?account_number=<account_number>&lakehouse=<lakehouse_cluster_name>')
+    #    'hive://<username>:<password>@<region>.iomete.com/<database>?workspace_id=<workspace_id>&lakehouse=<lakehouse_cluster_name>')
 
     session = sessionmaker(bind=engine)()
     records = session.query(Table('my_awesome_data', MetaData(bind=engine), autoload=True)) \

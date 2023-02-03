@@ -9,8 +9,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from sqlalchemy import types
-# TODO shouldn't use mysql type
-from sqlalchemy.databases import mysql
 
 from pyhive import hive
 from pyhive.sqlalchemy_hive import HiveCompiler, HiveTypeCompiler, HiveHTTPDialect, HiveIdentifierPreparer, HiveDate, \
@@ -23,7 +21,7 @@ class IometeIdentifierPreparer(HiveIdentifierPreparer):
 
 _type_map = {
     'boolean': types.Boolean,
-    'tinyint': mysql.MSTinyInteger,
+    'tinyint': types.SmallInteger,
     'smallint': types.SmallInteger,
     'int': types.Integer,
     'bigint': types.BigInteger,

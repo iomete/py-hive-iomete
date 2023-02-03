@@ -16,8 +16,6 @@ from sqlalchemy import exc
 from sqlalchemy import processors
 from sqlalchemy import types
 from sqlalchemy import util
-# TODO shouldn't use mysql type
-from sqlalchemy.databases import mysql
 from sqlalchemy.engine import default
 from sqlalchemy.sql import compiler
 from sqlalchemy.sql.compiler import SQLCompiler
@@ -121,7 +119,7 @@ class HiveIdentifierPreparer(compiler.IdentifierPreparer):
 
 _type_map = {
     'boolean': types.Boolean,
-    'tinyint': mysql.MSTinyInteger,
+    'tinyint': types.SmallInteger,
     'smallint': types.SmallInteger,
     'int': types.Integer,
     'bigint': types.BigInteger,
@@ -152,13 +150,15 @@ class HiveCompiler(SQLCompiler):
         #   =>
         #   INSERT INTO TABLE `pyhive_test_database`.`test_table` SELECT ...
         regex = r'^(INSERT INTO) ([^\s]+) \([^\)]*\)'
-        assert re.search(regex, result), "Unexpected visit_insert result: {}".format(result)
+        assert re.search(
+            regex, result), "Unexpected visit_insert result: {}".format(result)
         return re.sub(regex, r'\1 TABLE \2', result)
 
     def visit_column(self, *args, **kwargs):
         result = super(HiveCompiler, self).visit_column(*args, **kwargs)
         dot_count = result.count('.')
-        assert dot_count in (0, 1, 2), "Unexpected visit_column result {}".format(result)
+        assert dot_count in (
+            0, 1, 2), "Unexpected visit_column result {}".format(result)
         if dot_count == 2:
             # we have something of the form schema.table.column
             # hive doesn't like the schema in front, so chop it out
@@ -281,7 +281,8 @@ class HiveDialect(default.DefaultDialect):
         # Using DESCRIBE works but is uglier.
         try:
             # This needs the table name to be unescaped (no backticks).
-            rows = connection.execute('DESCRIBE {}'.format(full_table)).fetchall()
+            rows = connection.execute(
+                'DESCRIBE {}'.format(full_table)).fetchall()
         except exc.OperationalError as e:
             # Does the table exist?
             regex_fmt = r'TExecuteStatementResp.*SemanticException.*Table not found {}'
@@ -321,7 +322,8 @@ class HiveDialect(default.DefaultDialect):
             try:
                 coltype = _type_map[col_type]
             except KeyError:
-                util.warn("Did not recognize type '%s' of column '%s'" % (col_type, col_name))
+                util.warn("Did not recognize type '%s' of column '%s'" %
+                          (col_type, col_name))
                 coltype = types.NullType
 
             result.append({
@@ -394,6 +396,7 @@ class HiveHTTPDialect(HiveDialect):
             kwargs.update(url.query)
             return [], kwargs
         return ([], kwargs)
+
 
 class HiveIometeDialect(HiveDialect):
     name = 'iomete'

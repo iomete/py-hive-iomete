@@ -36,11 +36,13 @@ import thrift.transport.TTransport
 # PEP 249 module globals
 apilevel = '2.0'
 threadsafety = 2  # Threads may share the module and connections.
-paramstyle = 'pyformat'  # Python extended format codes, e.g. ...WHERE name=%(name)s
+# Python extended format codes, e.g. ...WHERE name=%(name)s
+paramstyle = 'pyformat'
 
 _logger = logging.getLogger(__name__)
 
 _TIMESTAMP_PATTERN = re.compile(r'(\d+-\d+-\d+ \d+:\d+:\d+(\.\d{,6})?)')
+
 
 def _parse_timestamp(value):
     if value:
@@ -106,7 +108,7 @@ class Connection(object):
         port=443,
         scheme="https",
 
-        account_number=None,
+        workspace_id=None,
         lakehouse=None,
 
         database='default',
@@ -130,13 +132,14 @@ class Connection(object):
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = CERT_NONE
             thrift_transport = thrift.transport.THttpClient.THttpClient(
-                uri_or_host="{scheme}://{host}:{port}/lakehouse/{account_number}/{lakehouse}".format(
-                    scheme=scheme, host=host, port=port, account_number=account_number, lakehouse=lakehouse
+                uri_or_host="{scheme}://{host}:{port}/lakehouse/{workspace_id}/{lakehouse}".format(
+                    scheme=scheme, host=host, port=port, workspace_id=workspace_id, lakehouse=lakehouse
                 ),
                 ssl_context=ssl_context,
             )
 
-            self._set_authorization_header(thrift_transport, username, password)
+            self._set_authorization_header(
+                thrift_transport, username, password)
 
         username = username or getpass.getuser()
         configuration = configuration or {}
@@ -146,7 +149,8 @@ class Connection(object):
 
         self._transport = thrift_transport
 
-        protocol = thrift.protocol.TBinaryProtocol.TBinaryProtocol(self._transport)
+        protocol = thrift.protocol.TBinaryProtocol.TBinaryProtocol(
+            self._transport)
         self._client = TCLIService.Client(protocol)
         # oldest version that still contains features we care about
         # "V6 uses binary type for binary payload (was string) and uses columnar result set"
@@ -164,7 +168,8 @@ class Connection(object):
             assert response.sessionHandle is not None, "Expected a session from OpenSession"
             self._sessionHandle = response.sessionHandle
             assert response.serverProtocolVersion == protocol_version, \
-                "Unable to handle protocol version {}".format(response.serverProtocolVersion)
+                "Unable to handle protocol version {}".format(
+                    response.serverProtocolVersion)
             with contextlib.closing(self.cursor()) as cursor:
                 cursor.execute('USE `{}`'.format(database))
         except:
@@ -221,7 +226,8 @@ class Connection(object):
         return self._sessionHandle
 
     def rollback(self):
-        raise NotSupportedError("Hive does not have transactions")  # pragma: no cover
+        raise NotSupportedError(
+            "Hive does not have transactions")  # pragma: no cover
 
 
 class Cursor(common.DBAPICursor):
@@ -300,8 +306,10 @@ class Cursor(common.DBAPICursor):
                     type_id = primary_type_entry.primitiveEntry.type
                     type_code = ttypes.TTypeId._VALUES_TO_NAMES[type_id]
                 self._description.append((
-                    col.columnName.decode('utf-8') if sys.version_info[0] == 2 else col.columnName,
-                    type_code.decode('utf-8') if sys.version_info[0] == 2 else type_code,
+                    col.columnName.decode(
+                        'utf-8') if sys.version_info[0] == 2 else col.columnName,
+                    type_code.decode(
+                        'utf-8') if sys.version_info[0] == 2 else type_code,
                     None, None, None, None, True
                 ))
         return self._description
@@ -356,8 +364,10 @@ class Cursor(common.DBAPICursor):
 
     def _fetch_more(self):
         """Send another TFetchResultsReq and update state"""
-        assert(self._state == self._STATE_RUNNING), "Should be running when in _fetch_more"
-        assert(self._operationHandle is not None), "Should have an op handle in _fetch_more"
+        assert(self._state ==
+               self._STATE_RUNNING), "Should be running when in _fetch_more"
+        assert(
+            self._operationHandle is not None), "Should have an op handle in _fetch_more"
         if not self._operationHandle.hasResultSet:
             raise ProgrammingError("No result set")
         req = ttypes.TFetchResultsReq(
@@ -426,7 +436,8 @@ class Cursor(common.DBAPICursor):
                 response = self._connection.client.FetchResults(req)
                 _check_status(response)
                 assert not response.results.rows, 'expected data in columnar format'
-                assert len(response.results.columns) == 1, response.results.columns
+                assert len(
+                    response.results.columns) == 1, response.results.columns
                 new_logs = _unwrap_column(response.results.columns[0])
                 logs += new_logs
 
@@ -467,7 +478,8 @@ def _unwrap_column(col, type_=None):
             if converter and type_:
                 result = [converter(row) if row else row for row in result]
             return result
-    raise DataError("Got empty column value {}".format(col))  # pragma: no cover
+    raise DataError("Got empty column value {}".format(col)
+                    )  # pragma: no cover
 
 
 def _check_status(response):

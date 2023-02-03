@@ -27,7 +27,7 @@ test_deps = [
     'pytest',
     'pytest-cov',
     'requests>=1.0.0',
-    'sqlalchemy>=1.3.0',
+    'sqlalchemy>=1.3.0,<=1.4.46',
     'thrift==0.13.0',
 ]
 
@@ -53,7 +53,7 @@ setup(
         'thrift==0.13.0'
     ],
     extras_require={
-        'sqlalchemy': ['sqlalchemy>=1.3.0'],
+        'sqlalchemy': ['sqlalchemy>=1.3.0,<=1.4.46'],
         'test': test_deps,
     },
     tests_require=test_deps,
