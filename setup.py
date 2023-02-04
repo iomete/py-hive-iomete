@@ -55,6 +55,10 @@ setup(
     extras_require={
         'sqlalchemy': ['sqlalchemy>=1.3.0,<=1.4.46'],
         'test': test_deps,
+        'presto': ['requests>=1.0.0'],
+        'trino': ['requests>=1.0.0'],
+        'hive': ['sasl>=0.2.1', 'thrift>=0.10.0', 'thrift_sasl>=0.1.0'],
+        'kerberos': ['requests_kerberos>=0.12.0'],
     },
     tests_require=test_deps,
     cmdclass={'test': PyTest},
@@ -65,7 +69,11 @@ setup(
         'sqlalchemy.dialects': [
             "hive = pyhive.sqlalchemy_hive:HiveIometeDialect",
             "hive.iomete = pyhive.sqlalchemy_hive:HiveIometeDialect",
-            "iomete = pyhive.sqlalchemy_iomete:IometeDialect"
+            "iomete = pyhive.sqlalchemy_iomete:IometeDialect",
+            "hive.http = pyhive.sqlalchemy_hive:HiveHTTPDialect",
+            "hive.https = pyhive.sqlalchemy_hive:HiveHTTPSDialect",
+            'presto = pyhive.sqlalchemy_presto:PrestoDialect',
+            'trino.pyhive = pyhive.sqlalchemy_trino:TrinoDialect'
         ],
     }
 )

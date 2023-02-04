@@ -380,6 +380,7 @@ class HiveDialect(default.DefaultDialect):
 
 
 class HiveHTTPDialect(HiveDialect):
+
     name = "hive"
     scheme = "http"
     driver = "rest"
@@ -396,6 +397,12 @@ class HiveHTTPDialect(HiveDialect):
             kwargs.update(url.query)
             return [], kwargs
         return ([], kwargs)
+
+
+class HiveHTTPSDialect(HiveHTTPDialect):
+
+    name = "hive"
+    scheme = "https"
 
 
 class HiveIometeDialect(HiveDialect):

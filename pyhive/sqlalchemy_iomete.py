@@ -11,7 +11,7 @@ from __future__ import unicode_literals
 from sqlalchemy import types
 
 from pyhive import hive
-from pyhive.sqlalchemy_hive import HiveCompiler, HiveTypeCompiler, HiveHTTPDialect, HiveIdentifierPreparer, HiveDate, \
+from pyhive.sqlalchemy_hive import HiveCompiler, HiveTypeCompiler, HiveHTTPDialect, HiveHTTPSDialect, HiveIdentifierPreparer, HiveDate, \
     HiveTimestamp, HiveDecimal, HiveDialect
 
 

@@ -36,12 +36,17 @@ import thrift.transport.TTransport
 # PEP 249 module globals
 apilevel = '2.0'
 threadsafety = 2  # Threads may share the module and connections.
-# Python extended format codes, e.g. ...WHERE name=%(name)s
 paramstyle = 'pyformat'
 
 _logger = logging.getLogger(__name__)
 
 _TIMESTAMP_PATTERN = re.compile(r'(\d+-\d+-\d+ \d+:\d+:\d+(\.\d{,6})?)')
+
+ssl_cert_parameter_map = {
+    "none": CERT_NONE,
+    "optional": CERT_OPTIONAL,
+    "required": CERT_REQUIRED,
+}
 
 
 def _parse_timestamp(value):
