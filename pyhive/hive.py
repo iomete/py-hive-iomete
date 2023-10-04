@@ -113,7 +113,6 @@ class Connection(object):
         port=443,
         scheme="https",
 
-        workspace_id=None,
         lakehouse=None,
 
         database='default',
@@ -137,8 +136,8 @@ class Connection(object):
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = CERT_NONE
             thrift_transport = thrift.transport.THttpClient.THttpClient(
-                uri_or_host="{scheme}://{host}:{port}/lakehouse/{workspace_id}/{lakehouse}".format(
-                    scheme=scheme, host=host, port=port, workspace_id=workspace_id, lakehouse=lakehouse
+                uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
+                    scheme=scheme, host=host, port=port, lakehouse=lakehouse
                 ),
                 ssl_context=ssl_context,
             )
