@@ -129,18 +129,24 @@ class Connection(object):
         :param configuration: A dictionary of Hive settings (functionally same as the `set` command)
         """
         if scheme in ("https", "http") and thrift_transport is None:
-            port = port or 1000
             ssl_context = None
             if scheme == "https":
                 ssl_context = create_default_context()
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = CERT_NONE
-            thrift_transport = thrift.transport.THttpClient.THttpClient(
-                uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
-                    scheme=scheme, host=host, port=port, lakehouse=lakehouse
-                ),
-                ssl_context=ssl_context,
-            )
+                thrift_transport = thrift.transport.THttpClient.THttpClient(
+                    uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
+                        scheme=scheme, host=host, port=port, lakehouse=lakehouse
+                    ),
+                    ssl_context=ssl_context,
+                )
+            else:
+                thrift_transport = thrift.transport.THttpClient.THttpClient(
+                    uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
+                        scheme=scheme, host=host, port=port, lakehouse=lakehouse
+                    ),
+                    ssl_context=None,
+                )
 
             self._set_authorization_header(
                 thrift_transport, username, password)

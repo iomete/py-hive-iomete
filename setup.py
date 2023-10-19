@@ -67,9 +67,10 @@ setup(
     },
     entry_points={
         'sqlalchemy.dialects': [
-            "hive = pyhive.sqlalchemy_hive:HiveIometeDialect",
-            "hive.iomete = pyhive.sqlalchemy_hive:HiveIometeDialect",
-            "iomete = pyhive.sqlalchemy_iomete:IometeDialect",
+            "hive = pyhive.sqlalchemy_hive:HiveDialect",
+            "iomete = pyhive.sqlalchemy_iomete:IometeHttpsDialect",
+            "iomete.http = pyhive.sqlalchemy_iomete:IometeHttpDialect",
+            "iomete.https = pyhive.sqlalchemy_iomete:IometeHttpsDialect",
             "hive.http = pyhive.sqlalchemy_hive:HiveHTTPDialect",
             "hive.https = pyhive.sqlalchemy_hive:HiveHTTPSDialect",
             'presto = pyhive.sqlalchemy_presto:PrestoDialect',

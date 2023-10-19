@@ -16,7 +16,9 @@ DB-API
     from pyhive import hive
 
     connection = hive.connect(
-        host="<cloud_region>.iomete.com",
+        host="<data_plane_host>",
+        port=<data_plane_port>,
+        scheme="http", # or "https"
         lakehouse="<lakehouse_cluster_name>",
         database="default",
         username="<username>",
@@ -37,7 +39,9 @@ DB-API (asynchronous)
     from TCLIService.ttypes import TOperationState
 
     connection = hive.connect(
-        host="<cloud_region>.iomete.com",
+        host="<data_plane_host>",
+        port=<data_plane_port>,
+        scheme="http", # or "https"
         lakehouse="<lakehouse_cluster_name>",
         database="default",
         username="<username>",
@@ -73,12 +77,17 @@ First install this package to register it with SQLAlchemy (see ``setup.py``).
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.schema import *
 
+    # Possible dialects (hive and iomete are both operate identically):
+    # hive+http
+    # hive+https
+    # iomete+http
+    # iomete+https
     engine = create_engine(
-        'iomete://<username>:<password>@<region>.iomete.com/<database>?lakehouse=<lakehouse_cluster_name>')
+        'iomete+https://<username>:<password>@<data_plane_host>:<data_plane_port>/<database>?lakehouse=<lakehouse_cluster_name>')
 
     # Alternatively, "hive" driver could be used as well
     # engine = create_engine(
-    #    'hive://<username>:<password>@<region>.iomete.com/<database>?lakehouse=<lakehouse_cluster_name>')
+    #    'hive+https://<username>:<password>@<data_plane_host>:<data_plane_port>/<database>?lakehouse=<lakehouse_cluster_name>')
 
     session = sessionmaker(bind=engine)()
     records = session.query(Table('my_awesome_data', MetaData(bind=engine), autoload=True)) \

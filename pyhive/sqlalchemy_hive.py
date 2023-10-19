@@ -403,29 +403,3 @@ class HiveHTTPSDialect(HiveHTTPDialect):
 
     name = "hive"
     scheme = "https"
-
-
-class HiveIometeDialect(HiveDialect):
-    name = 'iomete'
-    scheme = "iomete"
-    driver = "rest"
-
-    supports_statement_cache = False
-
-    def create_connect_args(self, url):
-        kwargs = {
-            "host": url.host,
-            "port": url.port or 443,
-            "scheme": "https",
-            "username": url.username or None,
-            "password": url.password or None,
-            "database": url.database or None
-        }
-        if url.query:
-            kwargs.update(url.query)
-            return [], kwargs
-        return ([], kwargs)
-
-    @classmethod
-    def dbapi(cls):
-        return hive
