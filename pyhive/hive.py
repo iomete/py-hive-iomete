@@ -114,6 +114,7 @@ class Connection(object):
         scheme="https",
 
         lakehouse=None,
+        data_plane=None,
 
         database='default',
         username=None,
@@ -134,19 +135,21 @@ class Connection(object):
                 ssl_context = create_default_context()
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = CERT_NONE
-                thrift_transport = thrift.transport.THttpClient.THttpClient(
-                    uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
-                        scheme=scheme, host=host, port=port, lakehouse=lakehouse
-                    ),
-                    ssl_context=ssl_context,
+
+            # Update URL logic
+            if data_plane:
+                url = "{scheme}://{host}:{port}/data-plane/{data_plane}/lakehouse/{lakehouse}".format(
+                    scheme=scheme, host=host, port=port, data_plane=data_plane, lakehouse=lakehouse
                 )
             else:
-                thrift_transport = thrift.transport.THttpClient.THttpClient(
-                    uri_or_host="{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
-                        scheme=scheme, host=host, port=port, lakehouse=lakehouse
-                    ),
-                    ssl_context=None,
+                url = "{scheme}://{host}:{port}/lakehouse/{lakehouse}".format(
+                    scheme=scheme, host=host, port=port, lakehouse=lakehouse
                 )
+
+            thrift_transport = thrift.transport.THttpClient.THttpClient(
+                uri_or_host=url,
+                ssl_context=ssl_context,
+            )
 
             self._set_authorization_header(
                 thrift_transport, username, password)

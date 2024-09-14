@@ -20,6 +20,7 @@ DB-API
         port=<data_plane_port>,
         scheme="http", # or "https"
         lakehouse="<lakehouse_cluster_name>",
+        data_plane=None # or data_plane (namespace)
         database="default",
         username="<username>",
         password="<password>"
@@ -43,6 +44,7 @@ DB-API (asynchronous)
         port=<data_plane_port>,
         scheme="http", # or "https"
         lakehouse="<lakehouse_cluster_name>",
+        data_plane=None # or data_plane (namespace)
         database="default",
         username="<username>",
         password="<password>"
@@ -84,6 +86,10 @@ First install this package to register it with SQLAlchemy (see ``setup.py``).
     # iomete+https
     engine = create_engine(
         'iomete+https://<username>:<password>@<data_plane_host>:<data_plane_port>/<database>?lakehouse=<lakehouse_cluster_name>')
+
+    # or with data_plane specified
+    # engine = create_engine(
+    #    'iomete+https://<username>:<password>@<data_plane_host>:<data_plane_port>/<database>?lakehouse=<lakehouse_cluster_name>&data_plane=<data_plane>')
 
     # Alternatively, "hive" driver could be used as well
     # engine = create_engine(
