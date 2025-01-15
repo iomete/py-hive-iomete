@@ -392,7 +392,10 @@ class Cursor(common.DBAPICursor):
         _check_status(response)
         schema = self.description
         assert not response.results.rows, 'expected data in columnar format'
-        columns = [_unwrap_column(col, col_schema[1]) for col, col_schema in
+        if response.results.columns is None:
+            columns = []
+        else:
+            columns = [_unwrap_column(col, col_schema[1]) for col, col_schema in
                    zip(response.results.columns, schema)]
         new_data = list(zip(*columns))
         self._data += new_data

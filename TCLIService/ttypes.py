@@ -2827,8 +2827,6 @@ class TRowSet(object):
     )
 
     def __init__(self, startRowOffset=None, rows=None, columns=None, binaryColumns=None, columnCount=None, ):
-        if columns is None:
-            columns = []
         self.startRowOffset = startRowOffset
         self.rows = rows
         self.columns = columns
