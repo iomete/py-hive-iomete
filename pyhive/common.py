@@ -245,7 +245,7 @@ class ParamEscaper(object):
             return self.escape_number(item)
         elif isinstance(item, basestring):
             return self.escape_string(item)
-        elif isinstance(item, collections.Iterable):
+        elif isinstance(item, collections.abc.Iterable):
             return self.escape_sequence(item)
         elif isinstance(item, datetime.datetime):
             return self.escape_datetime(item, self._DATETIME_FORMAT)
